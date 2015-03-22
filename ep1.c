@@ -21,6 +21,7 @@ class Estado
             monges_md = m_md;
             margem_barco = mar_barco;
             predecessor = predec;
+            return;
         }
         
         int seguro()
@@ -147,15 +148,15 @@ class Estado
         
         Estado predecessor()
         {
-            return estados(predecessor);
+            return predecessor;
         }
 }
 
 class Pilha
 {
     private:
-        int posicoes[MAX_ESTADOS]
-        int tamanho
+        int posicoes[MAX_ESTADOS];
+        int tamanho;
     public:
         int vazia()
         {
@@ -243,7 +244,7 @@ class Lista
         Estado elemento(int i)
         {
             Celula *c;
-            c = getCelula(i)
+            c = getCelula(i);
             return c->getConteudo();
         }
         int tamanho()
