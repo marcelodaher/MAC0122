@@ -152,43 +152,6 @@ class Estado
         }
 }
 
-class Pilha
-{
-    private:
-        int posicoes[MAX_ESTADOS];
-        int tamanho;
-    public:
-        int vazia()
-        {
-            if (tamanho)
-                return 0;
-            return 1;
-        }
-        void empilha(Estado *e)
-        {
-            if (tamanho >= MAX_ESTADOS)
-                throw std::invalid_argument( "pilha vazou" );
-                return;
-            posicoes[tamanho] = e;
-            tamanho++;
-            return;
-        }
-        Estado topo()
-        {
-            return *posicoes[tamanho];
-        }
-        void desempilha()
-        {
-            tamanho--;
-            return;
-        }
-        void inicializa()
-        {
-            tamanho = 0;
-            return;
-        }
-}
-
 class Celula
 {
     private:
@@ -198,6 +161,7 @@ class Celula
         Celula(Estado *e)
         {
             setConteudo(e);
+            setProx(NULL);
             return;
         }
         Estado getConteudo()
@@ -239,9 +203,10 @@ class Lista
     public:
         Lista()
         {
+            inicio = NULL
             tamanho = 0;
         }
-        Estado elemento(int i)
+        Estado *elemento(int i)
         {
             Celula *c;
             c = getCelula(i);
@@ -276,6 +241,54 @@ class Lista
                 
             }
             return 0;
+        }
+}
+
+class Pilha
+{
+    private:
+        Celula *top;
+        int tamanho;
+    public:
+        Pilha()
+        {
+            top = NULL;
+            tamanho = 0;
+        }
+        int vazia()
+        {
+            if (tamanho)
+                return 0;
+            return 1;
+        }
+        void empilha(Estado *e)
+        {
+            Celula *c;
+            c = new Celula(e);
+            c->setProx(top);
+            top = c;
+            tamanho++;
+            return;
+        }
+        Estado *topo()
+        {
+            return top->getConteudo();
+        }
+        void Desempilha()
+        {
+            if (tamanho == 0)
+                {
+                throw std::invalid_argument( "pilha secou" );
+                return;
+                }
+            top = top->getProx();
+            tamanho--;
+            return;
+        }
+        void inicializa()
+        {
+            top = NULL;
+            tamanho = 0;
         }
 }
 
