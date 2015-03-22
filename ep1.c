@@ -12,7 +12,8 @@ class Estado
         char margem_barco;
         
     public:
-        void inicializa(int  canibais_me,  canibais  md,  monges_me, montes_md,  margem_barco, Estado  *predecessor)
+        void inicializa(int  canibais_me, canibais_md, monges_me, montes_md,
+                        margem_barco, Estado *predecessor)
         
         int seguro()
         {
@@ -23,7 +24,116 @@ class Estado
         
         int sucessores(Estados *ar)
         {
-            
+            int validos = 0;
+            Estado *e;
+            //m c mm cc mc
+            if (margem_barco == "d")
+            {
+                if (monges_md)
+                {
+                    e = new Estado;
+                    e->inicializa(canibais_me,  canibais_md,  monges_me+1,
+                                    montes_md-1, "e", this);
+                    if (e->seguro())
+                        ar[validos++] = e;
+                    else
+                        delete e;
+                }
+                if (canibais_md)
+                {
+                    e = new Estado;
+                    e->inicializa(canibais_me+1,  canibais_md-1,  monges_me,
+                                    montes_md, "e", this);
+                    if (e->seguro())
+                        ar[validos++] = e;
+                    else
+                        delete e;
+                }
+                if (monges_md>=2)
+                {
+                    e = new Estado;
+                    e->inicializa(canibais_me,  canibais_md,  monges_me+2,
+                                    montes_md-2, "e", this);
+                    if (e->seguro())
+                        ar[validos++] = e;
+                    else
+                        delete e;
+                }
+                if (canibais_md>2)
+                {
+                    e = new Estado;
+                    e->inicializa(canibais_me+2,  canibais_md-2,  monges_me,
+                                    montes_md, "e", this);
+                    if (e->seguro())
+                        ar[validos++] = e;
+                    else
+                        delete e;
+                }
+                if (monges_md && canibais_md)
+                {
+                    e = new Estado;
+                    e->inicializa(canibais_me+1,  canibais_md-1,  monges_me+1,
+                                    montes_md-1, "e", this);
+                    if (e->seguro())
+                        ar[validos++] = e;
+                    else
+                        delete e;
+                }
+            }
+            if (margem_barco == "e")
+            {
+                if (monges_me)
+                {
+                    e = new Estado;
+                    e->inicializa(canibais_me,  canibais_md,  monges_me-1,
+                                    montes_md+1, "d", this);
+                    if (e->seguro())
+                        ar[validos++] = e;
+                    else
+                        delete e;
+                }
+                if (canibais_me)
+                {
+                    e = new Estado;
+                    e->inicializa(canibais_me-1,  canibais_md+1,  monges_me,
+                                    montes_md, "d", this);
+                    if (e->seguro())
+                        ar[validos++] = e;
+                    else
+                        delete e;
+                }
+                if (monges_me>=2)
+                {
+                    e = new Estado;
+                    e->inicializa(canibais_me,  canibais_md,  monges_me-2,
+                                    montes_md+2, "d", this);
+                    if (e->seguro())
+                        ar[validos++] = e;
+                    else
+                        delete e;
+                }
+                if (canibais_me>2)
+                {
+                    e = new Estado;
+                    e->inicializa(canibais_me-2,  canibais_md+2,  monges_me,
+                                    montes_md, "d", this);
+                    if (e->seguro())
+                        ar[validos++] = e;
+                    else
+                        delete e;
+                }
+                if (monges_md && canibais_md)
+                {
+                    e = new Estado;
+                    e->inicializa(canibais_me-1,  canibais_md+1,  monges_me-1,
+                                    montes_md+1, "d", this);
+                    if (e->seguro())
+                        ar[validos++] = e;
+                    else
+                        delete e;
+                }
+            }
+            return validos;
         }
         
         Estado predecessor()
