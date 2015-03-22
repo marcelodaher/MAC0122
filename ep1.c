@@ -8,16 +8,25 @@ class Estado
 {
     private:
         int canibais_me, canibais_md, monges_me, monges_md;
-        int predecessor;
+        Estado *predecessor;
         char margem_barco;
         
     public:
-        void inicializa(int  canibais_me, canibais_md, monges_me, montes_md,
-                        margem_barco, Estado *predecessor)
+        void inicializa(int  c_me, int c_md, int m_me, int m_md, char mar_barco,
+                        Estado *predec)
+        {
+            canibais_me = c_me;
+            canibais_md = c_md;
+            monges_me = m_me;
+            monges_md = m_md;
+            margem_barco = mar_barco;
+            predecessor = predec;
+        }
         
         int seguro()
         {
-            if (canibais_me>monges_me || canibais_md>monges_md)
+            if ((canibais_me>monges_me || monges_me == 0)
+             && (canibais_md>monges_md || monges_md == 0))
                 return 0;
             return 1;
         }
