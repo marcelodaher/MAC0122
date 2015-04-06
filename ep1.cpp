@@ -31,8 +31,8 @@ class Estado
         
         bool seguro()
         {
-            if ((canibais_me>monges_me || monges_me == 0)
-             && (canibais_md>monges_md || monges_md == 0))
+            if ((canibais_me>monges_me && monges_me != 0)
+             || (canibais_md>monges_md && monges_md != 0))
                 return FALSE;
             return TRUE;
         }
@@ -74,7 +74,7 @@ class Estado
                     else
                         delete e;
                 }
-                if (canibais_md>2)
+                if (canibais_md>=2)
                 {
                     e = new Estado;
                     e->inicializa(canibais_me+2,  canibais_md-2,  monges_me,
@@ -127,7 +127,7 @@ class Estado
                     else
                         delete e;
                 }
-                if (canibais_me>2)
+                if (canibais_me>=2)
                 {
                     e = new Estado;
                     e->inicializa(canibais_me-2,  canibais_md+2,  monges_me,
@@ -137,7 +137,7 @@ class Estado
                     else
                         delete e;
                 }
-                if (monges_md && canibais_md)
+                if (monges_me && canibais_me)
                 {
                     e = new Estado;
                     e->inicializa(canibais_me-1,  canibais_md+1,  monges_me-1,
@@ -213,7 +213,7 @@ class Conjunto
             int cont;
             Celula *c;
             c = inicio;
-            for (cont=0; cont<i; cont++)
+            for (cont=1; cont<i; cont++)
             {
                 c = c->getProx();
             }
@@ -239,7 +239,12 @@ class Conjunto
         {
             Celula *c, *ultima;
             c = new Celula(e);
-            c->setConteudo(e);
+            if (tamanho == 0)
+                {
+                inicio = c;
+                tamanho++;
+                return;
+                }
             ultima = getCelula(tamanho);
             ultima->setProx(c);
             tamanho++;
@@ -333,11 +338,14 @@ Pilha *Estado::geraHistorico()
     Pilha *historico;
     Estado *e;
     historico = new Pilha;
+    e=this;
     while (e->anterior() != NULL)
     {
         historico->empilha(e);
         e = e->anterior();
     }
+    historico->empilha(e);
+    e = e->anterior();
     return historico;
 }
 
@@ -374,6 +382,7 @@ int main(){
     estadoFinal->inicializa(ceF, cdF, meF, mdF, mbF, NULL);
     
     analise->empilha(estadoInicial);
+    estadosPassados->adiciona(estadoInicial);
     
     while (!(terminou || analise->vazia()))
     {
@@ -381,16 +390,23 @@ int main(){
         analise->desempilha();
         for (i=0; i<s; i++)
         {
-            if (estadoFinal->igual_a(aray[i]))
+                //aray[i]->imprime();
+            if (estadosPassados->contem(aray[i]))
+                delete aray[i];
+            else
             {
-                estadoFinal = aray[i];
-                terminou = 1;
-            }
-            if (!(estadosPassados->contem(aray[i])))
+                estadosPassados->adiciona(aray[i]);
                 analise->empilha(aray[i]);
+                if (estadoFinal->igual_a(aray[i]))
+                    {
+                    estadoFinal = aray[i];
+                    terminou = 1;
+                }
+            }
         }
     }
     
+    cout<<"aieee\n";
     if (terminou == 1)
     {
         historico = estadoFinal->geraHistorico();
@@ -400,8 +416,7 @@ int main(){
             historico->desempilha();
         }
     }
-    else cout<<"deu certo nao";
-    
+    else cout<<"deu certo nao\n";
     
     
     
