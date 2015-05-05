@@ -166,6 +166,31 @@ class Estado
             return;
         }
         
+        int getValor()
+        {
+            return valor;
+        }
+        
+        bool operator==(Estado *e2)
+        {
+            return (getValor() == e2->getValor());
+        }
+        
+        bool operator!=(Estado *e2)
+        {
+            return !(this == e2);
+        }
+        
+        bool operator>(Estado *e2)
+        {
+            return (getValor()>e2->getValor());
+        }
+        
+        bool operator<(Estado *e2)
+        {
+            return (e2>this);
+        }
+        
         bool igual_a(Estado *e2)
         {
             if (canibais_me == e2->canibais_me
@@ -176,6 +201,8 @@ class Estado
                 return TRUE;
             return FALSE;
         }
+        
+        
         
         Pilha *geraHistorico();
         void imprime();
