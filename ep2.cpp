@@ -5,6 +5,8 @@
 #define TRUE (1==1)
 #define FALSE (!TRUE)
 
+int m, n;
+
 using namespace std;
 
 class Pilha;
@@ -15,6 +17,7 @@ class Estado
         int canibais_me, canibais_md, monges_me, monges_md;
         Estado *predecessor;
         char margem_barco;
+        bool barcoEsquerdo;
         int valor;
     public:
         Estado(bool barcoEstaDoLadoEquerdo, int mongesDoLadoEsquerdo,
@@ -24,6 +27,7 @@ class Estado
             canibais_md = n - canibaisDoLadoEsquerdo;
             monges_me = mongesDoLadoEsquerdo;
             monges_md = m - mongesDoLadoEsquerdo;
+            barcoEsquerdo = barcoEstaDoLadoEquerdo;
             if (barcoEstaDoLadoEquerdo)
                 margem_barco = 'e';
             else margem_barco = 'd';
@@ -45,13 +49,11 @@ class Estado
             int validos = 0;
             Estado *e;
             //m c mm cc mc
-            if (margem_barco == 'd')
+            if (!barcoEsquerdo)
             {
                 if (monges_md)
                 {
-                    e = new Estado;
-                    e->inicializa(canibais_me,  canibais_md,  monges_me+1,
-                                    monges_md-1, 'e', this);
+                    e = new Estado(!barcoEsquerdo, monges_me+1, canibais_me, this);
                     if (e->seguro())
                         ar[validos++] = e;
                     else
@@ -59,9 +61,7 @@ class Estado
                 }
                 if (canibais_md)
                 {
-                    e = new Estado;
-                    e->inicializa(canibais_me+1,  canibais_md-1,  monges_me,
-                                    monges_md, 'e', this);
+                    e = new Estado(!barcoEsquerdo, monges_me, canibais_me+1, this);
                     if (e->seguro())
                         ar[validos++] = e;
                     else
@@ -69,9 +69,7 @@ class Estado
                 }
                 if (monges_md>=2)
                 {
-                    e = new Estado;
-                    e->inicializa(canibais_me,  canibais_md,  monges_me+2,
-                                    monges_md-2, 'e', this);
+                    e = new Estado(!barcoEsquerdo, monges_me+2, canibais_me, this);
                     if (e->seguro())
                         ar[validos++] = e;
                     else
@@ -79,9 +77,7 @@ class Estado
                 }
                 if (canibais_md>=2)
                 {
-                    e = new Estado;
-                    e->inicializa(canibais_me+2,  canibais_md-2,  monges_me,
-                                    monges_md, 'e', this);
+                    e = new Estado(!barcoEsquerdo, monges_me, canibais_me+2, this);
                     if (e->seguro())
                         ar[validos++] = e;
                     else
@@ -89,22 +85,18 @@ class Estado
                 }
                 if (monges_md && canibais_md)
                 {
-                    e = new Estado;
-                    e->inicializa(canibais_me+1,  canibais_md-1,  monges_me+1,
-                                    monges_md-1, 'e', this);
+                    e = new Estado(!barcoEsquerdo, monges_me+1, canibais_me+1, this);
                     if (e->seguro())
                         ar[validos++] = e;
                     else
                         delete e;
                 }
             }
-            if (margem_barco == 'e')
+            if (barcoEsquerdo)
             {
                 if (monges_me)
                 {
-                    e = new Estado;
-                    e->inicializa(canibais_me,  canibais_md,  monges_me-1,
-                                    monges_md+1, 'd', this);
+                    e = new Estado(!barcoEsquerdo, monges_me-1, canibais_me, this);
                     if (e->seguro())
                         ar[validos++] = e;
                     else
@@ -112,9 +104,7 @@ class Estado
                 }
                 if (canibais_me)
                 {
-                    e = new Estado;
-                    e->inicializa(canibais_me-1,  canibais_md+1,  monges_me,
-                                    monges_md, 'd', this);
+                    e = new Estado(!barcoEsquerdo, monges_me, canibais_me-1, this);
                     if (e->seguro())
                         ar[validos++] = e;
                     else
@@ -122,9 +112,7 @@ class Estado
                 }
                 if (monges_me>=2)
                 {
-                    e = new Estado;
-                    e->inicializa(canibais_me,  canibais_md,  monges_me-2,
-                                    monges_md+2, 'd', this);
+                    e = new Estado(!barcoEsquerdo, monges_me-2, canibais_me, this);
                     if (e->seguro())
                         ar[validos++] = e;
                     else
@@ -132,9 +120,7 @@ class Estado
                 }
                 if (canibais_me>=2)
                 {
-                    e = new Estado;
-                    e->inicializa(canibais_me-2,  canibais_md+2,  monges_me,
-                                    monges_md, 'd', this);
+                    e = new Estado(!barcoEsquerdo, monges_me, canibais_me-2, this);
                     if (e->seguro())
                         ar[validos++] = e;
                     else
@@ -142,9 +128,7 @@ class Estado
                 }
                 if (monges_me && canibais_me)
                 {
-                    e = new Estado;
-                    e->inicializa(canibais_me-1,  canibais_md+1,  monges_me-1,
-                                    monges_md+1, 'd', this);
+                    e = new Estado(!barcoEsquerdo, monges_me-1, canibais_me-1, this);
                     if (e->seguro())
                         ar[validos++] = e;
                     else
@@ -162,7 +146,7 @@ class Estado
         void calculaValor()
         {
             valor = canibais_me + (n+1)*monges_me;
-            if (margem_barco == 'd') valor += (m+1)*(n=1);
+            if (margem_barco == 'd') valor += (m+1)*(n+1);
             return;
         }
         
@@ -201,8 +185,6 @@ class Estado
                 return TRUE;
             return FALSE;
         }
-        
-        
         
         Pilha *geraHistorico();
         void imprime();
@@ -265,6 +247,11 @@ class No
         {
             return esq;
         }
+        void setConteudo(Estado *e)
+        {
+            conteudo = e;
+            return;
+        }
         void setDir(No *direito)
         {
             dir = direito;
@@ -282,29 +269,29 @@ class ConjuntoOrdenado
     protected:
         int tamanho;
     public:
+        int getTamanho()
+        {
+            return tamanho;
+        };
         bool vazio()
         {
             if (tamanho==0) return TRUE;
             return FALSE;
         }
-        void adiciona(Estado *e);
-        Estado *proximo();
-        void remove();
+        virtual void adiciona(Estado *e){}
+        virtual Estado *proximo(){}
+        virtual void remove(){}
 };
 
 class Pilha: public ConjuntoOrdenado
 {
     protected:
-        celula *top;
+        Celula *top;
     public:
         Pilha()
         {
             top = NULL;
             tamanho = 0;
-        }
-        bool vazia()
-        {
-            return vazio();
         }
         void adiciona(Estado *e)
         {
@@ -354,17 +341,11 @@ class Fila: public ConjuntoOrdenado
             inicio = fim = NULL;
             tamanho = 0;
         }
-        bool vazia()
-        {
-            if (tamanho == 0)
-                return TRUE;
-            return FALSE;
-        }
         void adiciona(Estado *e)
         {
             Celula *c;
             c = new Celula(e);
-            if (vazia())
+            if (vazio())
                 inicio = c;
             else
                 fim->setProx(c);
@@ -407,8 +388,8 @@ class Conjunto
         {
             return itTamanho;
         }
-        void adiciona(Estado *e);
-        int contem(Estado *e);
+        virtual void adiciona(Estado *e){}
+        virtual bool contem(Estado *e){}
 };
 
 class ConjuntoLista: public Conjunto
@@ -421,12 +402,6 @@ class ConjuntoLista: public Conjunto
             inicio = NULL;
             tamanho = 0;
             itContem = itAdiciona = itTamanho = 0;
-        }
-        Estado *elemento(int i)
-        {
-            Celula *c;
-            c = getCelula(i);
-            return c->getConteudo();
         }
         void adiciona(Estado *e)
         {
@@ -444,11 +419,12 @@ class ConjuntoLista: public Conjunto
         bool contem(Estado *e)
         {
             int i;
+            int t = getTamanho();
             Celula *c;
             Estado *e2;
             itContem++;
             c = inicio;
-            for (i = 0; i<getTamanho(); i++)
+            for (i = 0; i<t; i++)
             {
                 e2 = c->getConteudo();
                 if (e->igual_a(e2))
@@ -521,8 +497,18 @@ class ArvoreBinaria: public Conjunto
                 }
             }
             itContem++;
-            return bool;
+            return contem;
         }
+};
+
+class ArvoreAVN: public Conjunto
+{
+
+};
+
+class ConjuntoHash: public Conjunto
+{
+
 };
 
 void Estado::imprime()
@@ -558,49 +544,87 @@ Pilha *Estado::geraHistorico()
 }
 
 int main(){
-    
-    static int m, n;
-    
+        
     int md0, me0, cd0, ce0; //monges e canibais por margem (inicial)
     int mdF, meF, cdF, ceF; //monges e canibais por margem (final)
-    char mb0, mbF; //margem do barco inicial e final
+    bool be0, beF; //barco esta na esquerda - inicial e final
     
     int s, i;
     int terminou = 0; //flag
+    int tipoConjuntoOrdenado, tipoConjunto;
     
     Estado *estadoInicial;
     Estado *estadoFinal;
     Estado *aray[5];
     
-    Pilha *analise, *historico;
-    Conjunto *estadosPassados;
+    Pilha *historico;
+        
+    //interface
+    cout << "\nQual tipo de conjunto ordenado deve ser utilizado?";
+    cout << "\n1 - Pilha\n2-Fila\n";
+    cin >> tipoConjuntoOrdenado;
     
+    cout << "\nQual tipo de conjunto deve ser utilizado?";
+    cout << "\n1 - ConjuntoLista\n2-ArvoreBinaria\n3-ArvoreAVN\n4-ConjuntoHash\n";
+    cin >> tipoConjunto;
+    
+    cout << "\n\nQual o numero de monges?   ";
+    cin >> m;
+    cout << "\nQual o numero de canibais?    ";
+    cin >> n;
+    
+    ConjuntoOrdenado *analise;
+    switch(tipoConjuntoOrdenado) //define analise
+    {
+        case 1:
+            analise = new Pilha;
+            break;
+        case 2:
+            analise = new Fila;
+            break;
+    }
+    
+    Conjunto *estadosPassados;
+    switch(tipoConjunto) //define estadosPassados
+    {
+        case 1:
+            cout << "CONJUNTOLISTA";
+            estadosPassados = new ConjuntoLista;
+            break;
+        case 2:
+            estadosPassados = new ArvoreBinaria;
+            break;
+        case 3:
+            estadosPassados = new ArvoreAVN;
+            break;
+        case 4:
+            estadosPassados = new ConjuntoHash;
+            break;
+    }
+        
     //VALORES TESTE
     md0 = cd0 = 0;
     me0 = m;
     ce0 = n;
-    mb0 = 'e';
-    
+    be0 = TRUE;
+
     mdF = m;
     cdF = n;
     meF = ceF = 0;
-    mbF = 'd';
-    
-    analise = new Pilha;
-    estadosPassados = new Conjunto;
-    
-    estadoInicial = new Estado;
-    estadoInicial->inicializa(ce0, cd0, me0, md0, mb0, NULL);
-    estadoFinal = new Estado;
-    estadoFinal->inicializa(ceF, cdF, meF, mdF, mbF, NULL);
-    
-    analise->empilha(estadoInicial);
+    beF = FALSE;
+
+    estadoInicial = new Estado(be0, me0, ce0, NULL);
+    estadoFinal = new Estado(beF, meF, ceF, NULL);
+
+    analise->adiciona(estadoInicial);
     estadosPassados->adiciona(estadoInicial);
     
-    while (!(terminou || analise->vazia()))
+    analise->proximo()->imprime();
+    
+    while (!(terminou || analise->vazio()))
     {
-        s = analise->topo()->sucessores(aray);
-        analise->desempilha();
+        s = analise->proximo()->sucessores(aray);
+        analise->remove();
         for (i=0; i<s; i++)
         {
                 //aray[i]->imprime();
@@ -609,7 +633,7 @@ int main(){
             else
             {
                 estadosPassados->adiciona(aray[i]);
-                analise->empilha(aray[i]);
+                analise->adiciona(aray[i]);
                 if (estadoFinal->igual_a(aray[i]))
                     {
                     estadoFinal = aray[i];
@@ -619,23 +643,22 @@ int main(){
         }
     }
     
-    cout<<"aieee\n";
     if (terminou == 1)
     {
         historico = estadoFinal->geraHistorico();
-        while (!historico->vazia())
+        while (!historico->vazio())
         {
-            historico->topo()->imprime();
-            historico->desempilha();
+            historico->proximo()->imprime();
+            historico->remove();
         }
     }
     else cout<<"deu certo nao\n";
     
+    cout << "\nIteracoes Contem:    " << estadosPassados->iteracoesContem();
+    cout << "\nIteracoes Adiciona:  " << estadosPassados->iteracoesAdiciona();
+    cout << "\nIteracoes Tamanho:   " << estadosPassados->iteracoesTamanho();
     
-    
-    
-    
-    
+    cout << "\n";
     
     
     
