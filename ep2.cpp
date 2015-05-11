@@ -427,7 +427,6 @@ class ConjuntoLista: public Conjunto
             for (i = 0; i<t; i++)
             {
                 e2 = c->getConteudo();
-                //if (e->igual_a(e2))
                 if (*e==e2)
                     return TRUE;
                 c = c->getProx();
