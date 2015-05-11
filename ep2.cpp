@@ -158,7 +158,6 @@ class Estado
         bool operator==(Estado *e2)
         {
             return (getValor() == e2->getValor());
-            //return igual_a(e2);
         }
         
         bool operator!=(Estado *e2)
@@ -626,7 +625,6 @@ int main(){
         analise->remove();
         for (i=0; i<s; i++)
         {
-                //aray[i]->imprime();
             if (estadosPassados->contem(aray[i]))
                 delete aray[i];
             else
