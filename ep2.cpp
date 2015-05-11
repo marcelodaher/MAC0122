@@ -158,6 +158,7 @@ class Estado
         bool operator==(Estado *e2)
         {
             return (getValor() == e2->getValor());
+            //return igual_a(e2);
         }
         
         bool operator!=(Estado *e2)
@@ -323,7 +324,6 @@ class Fila: public ConjuntoOrdenado
 {
     protected:
         Celula *inicio, *fim;
-        int tamanho;
         Celula *getCelula(int i) //iniciando contagem do elemento 0
         {
             int cont;
@@ -350,7 +350,7 @@ class Fila: public ConjuntoOrdenado
             else
                 fim->setProx(c);
             fim = c;
-            tamanho ++;
+            tamanho++;
             return;
         }
         Estado *proximo()
@@ -360,7 +360,7 @@ class Fila: public ConjuntoOrdenado
         void remove()
         {
             inicio = inicio->getProx();
-            tamanho --;
+            tamanho--;
             return;
         }
 };
@@ -427,7 +427,8 @@ class ConjuntoLista: public Conjunto
             for (i = 0; i<t; i++)
             {
                 e2 = c->getConteudo();
-                if (e->igual_a(e2))
+                //if (e->igual_a(e2))
+                if (*e==e2)
                     return TRUE;
                 c = c->getProx();
             }
@@ -486,7 +487,7 @@ class ArvoreBinaria: public Conjunto
             n1 = inicio;
             while (n1 != NULL && contem == FALSE)
             {
-                if (e == n1->getConteudo())
+                if (*e == n1->getConteudo())
                     contem = TRUE;
                 else
                 {
@@ -588,7 +589,6 @@ int main(){
     switch(tipoConjunto) //define estadosPassados
     {
         case 1:
-            cout << "CONJUNTOLISTA";
             estadosPassados = new ConjuntoLista;
             break;
         case 2:
@@ -620,7 +620,7 @@ int main(){
     estadosPassados->adiciona(estadoInicial);
     
     analise->proximo()->imprime();
-    
+        
     while (!(terminou || analise->vazio()))
     {
         s = analise->proximo()->sucessores(aray);
