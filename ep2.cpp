@@ -1,6 +1,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <iostream>
+#include <cmath>
 
 #define TRUE (1==1)
 #define FALSE (!TRUE)
@@ -174,18 +175,7 @@ class Estado
         {
             return (e2>this);
         }
-        
-        bool igual_a(Estado *e2)
-        {
-            if (canibais_me == e2->canibais_me
-                 && canibais_md == e2->canibais_md
-                 && monges_me == e2->monges_me
-                 && monges_md == e2->monges_md
-                 && margem_barco == e2->margem_barco)
-                return TRUE;
-            return FALSE;
-        }
-        
+                
         Pilha *geraHistorico();
         void imprime();
 };
@@ -224,15 +214,18 @@ class Celula
 
 class No
 {
-    private:
+    protected:
         Estado *conteudo;
-        No *dir, *esq;
+        No *dir, *esq, *pai;
+        int hDir, hEsq; //altura da arvore pra direita e esquerda
+        int balance; //o quanto pesa a arvore para direita (+) ou esquerda (-)
     public:
         No(Estado *e)
         {
             setConteudo(e);
             setDir(NULL);
             setEsq(NULL);
+            setPai(NULL);
             return;
         }
         Estado *getConteudo()
@@ -247,6 +240,10 @@ class No
         {
             return esq;
         }
+        No *getPai()
+        {
+            return pai;
+        }
         void setConteudo(Estado *e)
         {
             conteudo = e;
@@ -260,6 +257,59 @@ class No
         void setEsq(No *esquerdo)
         {
             esq = esquerdo;
+            return;
+        }
+        void setPai(No *pai1)
+        {
+            pai = pai1;
+            return;
+        }
+        int getBalance()
+        {
+            return balance;
+        }
+        int calcHDir()
+        {
+            if (dir == NULL)
+            {
+                hDir == 0;
+            }
+            else
+            {
+                hDir = 1 + max(dir->calcHEsq(), dir->calcHDir());
+            }
+            return hDir;
+        }
+        int calcHEsq()
+        {
+            if (esq == NULL)
+            {
+                hEsq == 0;
+            }
+            else
+            {
+                hEsq = 1 + max(esq->calcHEsq(), esq->calcHDir());
+            }
+            return hEsq;
+        }
+        int calcBalance()
+        {
+            setBalance(calcHDir() - calcHEsq());
+            return getBalance();
+        }
+        void addBalance()
+        {
+            balance++;
+            return;
+        }
+        void subBalance()
+        {
+            balance--;
+            return;
+        }
+        void setBalance(int b)
+        {
+            balance = b;
             return;
         }
 };
@@ -500,9 +550,150 @@ class ArvoreBinaria: public Conjunto
         }
 };
 
-class ArvoreAVN: public Conjunto
+class ArvoreAVL: public Conjunto
 {
-
+    private:
+        No *inicio;
+    public:
+        ArvoreAVL()
+        {
+            inicio = NULL;
+            tamanho = 0;
+            itContem = itAdiciona = itTamanho = 0;
+        }
+        void adiciona(Estado *e)
+        {
+            No *node, *n1, *n2;
+            bool dir;
+            int bal;
+            node = new No(e);
+            if (!getTamanho())
+                inicio = node;
+            else
+            {
+                n1 = inicio;
+                while (n1 != NULL)
+                {
+                    n2 = n1;
+                    if (e>n1->getConteudo())
+                        {
+                        n1 = n1->getDir();
+                        dir = TRUE;
+                        }
+                    else
+                        {
+                        n1 = n1->getEsq();
+                        dir = FALSE;
+                        }
+                }
+                if (dir)
+                    n2->setDir(node);
+                else
+                    n2->setEsq(node);
+                node->setPai(n2);
+                while (n1 != NULL)
+                {
+                    n1 = node->getPai();
+                    if (abs(n1->calcBalance()) > 1)
+                    {
+                        fixBalance(n1);
+                    }
+                }
+            }
+            tamanho++;
+            itAdiciona++;
+            return;
+        }
+        bool contem(Estado *e)
+        {
+            No *n1;
+            bool contem = FALSE;
+            n1 = inicio;
+            while (n1 != NULL && contem == FALSE)
+            {
+                if (*e == n1->getConteudo())
+                    contem = TRUE;
+                else
+                {
+                    if (e > n1->getConteudo())
+                        n1 = n1->getDir();
+                    else
+                        n1 = n1->getEsq();
+                }
+            }
+            itContem++;
+            return contem;
+        }
+        void rotateL(No *n)
+        {
+            No *temp;
+            temp = n->getDir();
+            if (temp->getEsq() != NULL)
+                temp->getEsq()->setPai(n);
+            if (n->getPai() == NULL)
+                {
+                    inicio = temp;
+                    temp->setPai(NULL);
+                }
+            else if (n->getPai()->getEsq() == n)
+                n->getPai()->setEsq(temp);
+            else
+                n->getPai()->setDir(temp);
+            temp->setEsq(n);
+            n->setPai(temp);
+            return;
+        }
+        void rotateR(No *n)
+        {
+            No *temp;
+            temp = n->getEsq();
+            if (temp->getDir() != NULL)
+                temp->getDir()->setPai(n);
+            if (n->getPai() == NULL)
+                {
+                    inicio = temp;
+                    temp->setPai(NULL);
+                }
+            else if (n->getPai()->getDir() == n)
+                n->getPai()->setDir(temp);
+            else
+                n->getPai()->setEsq(temp);
+            temp->setDir(n);
+            n->setPai(temp);
+            return;
+        }
+        void rotateLR(No *n)
+        {
+            rotateR(n->getEsq());
+            rotateL(n);
+            return;
+        }
+        void rotateRL(No *n)
+        {
+            rotateL(n->getDir());
+            rotateR(n);
+            return;
+        }
+        void fixBalance(No *n)
+        {
+            switch (n->getBalance())
+            {
+                case 2:
+                    if (n->getDir()->getBalance()<0)
+                            rotateLR(n);
+                    else
+                        rotateL(n);
+                    break;
+                case -2:
+                    if (n->getEsq()->getBalance()>0)
+                            rotateRL(n);
+                    else
+                        rotateR(n);
+                    break;
+            }
+            n->calcBalance();
+            return;
+        }
 };
 
 class ConjuntoHash: public Conjunto
@@ -564,7 +755,7 @@ int main(){
     cin >> tipoConjuntoOrdenado;
     
     cout << "\nQual tipo de conjunto deve ser utilizado?";
-    cout << "\n1 - ConjuntoLista\n2-ArvoreBinaria\n3-ArvoreAVN\n4-ConjuntoHash\n";
+    cout << "\n1 - ConjuntoLista\n2-ArvoreBinaria\n3-ArvoreAVL\n4-ConjuntoHash\n";
     cin >> tipoConjunto;
     
     cout << "\n\nQual o numero de monges?   ";
@@ -593,7 +784,7 @@ int main(){
             estadosPassados = new ArvoreBinaria;
             break;
         case 3:
-            estadosPassados = new ArvoreAVN;
+            estadosPassados = new ArvoreAVL;
             break;
         case 4:
             estadosPassados = new ConjuntoHash;
@@ -616,9 +807,7 @@ int main(){
 
     analise->adiciona(estadoInicial);
     estadosPassados->adiciona(estadoInicial);
-    
-    analise->proximo()->imprime();
-        
+            
     while (!(terminou || analise->vazio()))
     {
         s = analise->proximo()->sucessores(aray);
@@ -631,7 +820,7 @@ int main(){
             {
                 estadosPassados->adiciona(aray[i]);
                 analise->adiciona(aray[i]);
-                if (estadoFinal->igual_a(aray[i]))
+                if (*estadoFinal==aray[i])
                     {
                     estadoFinal = aray[i];
                     terminou = 1;
