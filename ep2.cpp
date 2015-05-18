@@ -762,26 +762,30 @@ class ArvoreAVL: public Conjunto
 class ConjuntoHash: public Conjunto
 {
     private:
-        ConjuntoLista tabelaHash[TAMANHO_HASH];
+        ConjuntoLista *tabelaHash[TAMANHO_HASH];
         int calcValorHash(Estado *e)
         {
             int valorHash;
             float valorHashTemp;
             valorHashTemp = e->getValor() * sqrt(5)/4;
-            valorHash = floor(remainderf(valorHashTemp,1) * TAMANHO_HASH);
-            return valorHash;
+            while (valorHashTemp > 1) {valorHashTemp -= 1;}
+            valorHash = floor(valorHashTemp * TAMANHO_HASH);
+            return abs(valorHash);
         }
     public:
         ConjuntoHash()
         {
+            int i;
             tamanho = 0;
             itContem = itAdiciona = itTamanho = 0;
+            for (i=0; i<TAMANHO_HASH; i++)
+                tabelaHash[i] = new ConjuntoLista;
         }
         void adiciona(Estado *e)
         {
             int coluna;
             coluna = calcValorHash(e);
-            tabelaHash[coluna].adiciona(e);
+            tabelaHash[coluna]->adiciona(e);
             itAdiciona++;
             tamanho++;
             return;
@@ -791,7 +795,7 @@ class ConjuntoHash: public Conjunto
             int coluna;
             coluna = calcValorHash(e);
             itContem++;
-            return tabelaHash[coluna].contem(e);
+            return tabelaHash[coluna]->contem(e);
         }
 };
 
@@ -833,6 +837,8 @@ int main(){
     int mdF, meF, cdF, ceF; //monges e canibais por margem (final)
     bool be0, beF; //barco esta na esquerda - inicial e final
     
+    bool imprime; //vamos imprimir os barcos?
+    
     int s, i;
     int terminou = 0; //flag
     int tipoConjuntoOrdenado, tipoConjunto;
@@ -859,7 +865,6 @@ int main(){
     
     ConjuntoOrdenado *analise;
     
-    cout<<"flag";
     switch(tipoConjuntoOrdenado) //define analise
     {
         case 1:
@@ -872,7 +877,6 @@ int main(){
     
     Conjunto *estadosPassados;
     
-    cout<<"flag";
     switch(tipoConjunto) //define estadosPassados
     {
         case 1:
@@ -900,8 +904,6 @@ int main(){
     meF = ceF = 0;
     beF = FALSE;
     
-    cout<<"flag";
-
     estadoInicial = new Estado(be0, me0, ce0, NULL);
     estadoFinal = new Estado(beF, meF, ceF, NULL);
 
@@ -934,7 +936,7 @@ int main(){
         historico = estadoFinal->geraHistorico();
         while (!historico->vazio())
         {
-            historico->proximo()->imprime();
+            if (imprime) historico->proximo()->imprime();
             historico->remove();
         }
     }
