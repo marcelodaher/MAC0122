@@ -6,11 +6,27 @@
 #define TRUE (1==1)
 #define FALSE (!TRUE)
 
+const int TAMANHO_HASH = 128;
 int m, n;
 
 using namespace std;
 
 class Pilha;
+
+class Movimento
+{
+    private:
+        char barcoVaiPara;
+        int mongesNoBarco, canibaisNoBarco;
+    public:
+        Movimento(char bVaiPara, int mNoBarco, int cNoBarco)
+        {
+            barcoVaiPara = bVaiPara;
+            mongesNoBarco = mNoBarco;
+            canibaisNoBarco = cNoBarco;
+            return;
+        }
+};
 
 class Estado
 {
@@ -20,6 +36,7 @@ class Estado
         char margem_barco;
         bool barcoEsquerdo;
         int valor;
+        Movimento *movimentoGerador;
     public:
         Estado(bool barcoEstaDoLadoEquerdo, int mongesDoLadoEsquerdo,
                int canibaisDoLadoEsquerdo, Estado *predec)
@@ -45,10 +62,16 @@ class Estado
             return TRUE;
         }
         
+        void setMovimentoGerador(Movimento *m)
+        {
+            movimentoGerador = m;
+        }
+        
         int sucessores(Estado *ar[5])
         {
             int validos = 0;
             Estado *e;
+            Movimento *m;
             //m c mm cc mc
             if (!barcoEsquerdo)
             {
@@ -56,7 +79,11 @@ class Estado
                 {
                     e = new Estado(!barcoEsquerdo, monges_me+1, canibais_me, this);
                     if (e->seguro())
+                    {
                         ar[validos++] = e;
+                        m = new Movimento('e', 1, 0);
+                        e -> setMovimentoGerador(m);
+                    }
                     else
                         delete e;
                 }
@@ -64,7 +91,11 @@ class Estado
                 {
                     e = new Estado(!barcoEsquerdo, monges_me, canibais_me+1, this);
                     if (e->seguro())
+                    {
                         ar[validos++] = e;
+                        m = new Movimento('e', 0, 1);
+                        e -> setMovimentoGerador(m);
+                    }
                     else
                         delete e;
                 }
@@ -72,7 +103,11 @@ class Estado
                 {
                     e = new Estado(!barcoEsquerdo, monges_me+2, canibais_me, this);
                     if (e->seguro())
+                    {
                         ar[validos++] = e;
+                        m = new Movimento('e', 2, 0);
+                        e -> setMovimentoGerador(m);
+                    }
                     else
                         delete e;
                 }
@@ -80,7 +115,11 @@ class Estado
                 {
                     e = new Estado(!barcoEsquerdo, monges_me, canibais_me+2, this);
                     if (e->seguro())
+                    {
                         ar[validos++] = e;
+                        m = new Movimento('e', 0, 2);
+                        e -> setMovimentoGerador(m);
+                    }
                     else
                         delete e;
                 }
@@ -88,7 +127,11 @@ class Estado
                 {
                     e = new Estado(!barcoEsquerdo, monges_me+1, canibais_me+1, this);
                     if (e->seguro())
+                    {
                         ar[validos++] = e;
+                        m = new Movimento('e', 1, 1);
+                        e -> setMovimentoGerador(m);
+                    }
                     else
                         delete e;
                 }
@@ -99,7 +142,11 @@ class Estado
                 {
                     e = new Estado(!barcoEsquerdo, monges_me-1, canibais_me, this);
                     if (e->seguro())
+                    {
                         ar[validos++] = e;
+                        m = new Movimento('d', 1, 0);
+                        e -> setMovimentoGerador(m);
+                    }
                     else
                         delete e;
                 }
@@ -107,7 +154,11 @@ class Estado
                 {
                     e = new Estado(!barcoEsquerdo, monges_me, canibais_me-1, this);
                     if (e->seguro())
+                    {
                         ar[validos++] = e;
+                        m = new Movimento('d', 0, 1);
+                        e -> setMovimentoGerador(m);
+                    }
                     else
                         delete e;
                 }
@@ -115,7 +166,11 @@ class Estado
                 {
                     e = new Estado(!barcoEsquerdo, monges_me-2, canibais_me, this);
                     if (e->seguro())
+                    {
                         ar[validos++] = e;
+                        m = new Movimento('d', 2, 0);
+                        e -> setMovimentoGerador(m);
+                    }
                     else
                         delete e;
                 }
@@ -123,7 +178,11 @@ class Estado
                 {
                     e = new Estado(!barcoEsquerdo, monges_me, canibais_me-2, this);
                     if (e->seguro())
+                    {
                         ar[validos++] = e;
+                        m = new Movimento('d', 0, 2);
+                        e -> setMovimentoGerador(m);
+                    }
                     else
                         delete e;
                 }
@@ -131,7 +190,11 @@ class Estado
                 {
                     e = new Estado(!barcoEsquerdo, monges_me-1, canibais_me-1, this);
                     if (e->seguro())
+                    {
                         ar[validos++] = e;
+                        m = new Movimento('d', 1, 1);
+                        e -> setMovimentoGerador(m);
+                    }
                     else
                         delete e;
                 }
@@ -698,7 +761,38 @@ class ArvoreAVL: public Conjunto
 
 class ConjuntoHash: public Conjunto
 {
-
+    private:
+        ConjuntoLista tabelaHash[TAMANHO_HASH];
+        int calcValorHash(Estado *e)
+        {
+            int valorHash;
+            float valorHashTemp;
+            valorHashTemp = e->getValor() * sqrt(5)/4;
+            valorHash = floor(remainderf(valorHashTemp,1) * TAMANHO_HASH);
+            return valorHash;
+        }
+    public:
+        ConjuntoHash()
+        {
+            tamanho = 0;
+            itContem = itAdiciona = itTamanho = 0;
+        }
+        void adiciona(Estado *e)
+        {
+            int coluna;
+            coluna = calcValorHash(e);
+            tabelaHash[coluna].adiciona(e);
+            itAdiciona++;
+            tamanho++;
+            return;
+        }
+        bool contem(Estado *e)
+        {
+            int coluna;
+            coluna = calcValorHash(e);
+            itContem++;
+            return tabelaHash[coluna].contem(e);
+        }
 };
 
 void Estado::imprime()
@@ -764,6 +858,8 @@ int main(){
     cin >> n;
     
     ConjuntoOrdenado *analise;
+    
+    cout<<"flag";
     switch(tipoConjuntoOrdenado) //define analise
     {
         case 1:
@@ -775,6 +871,8 @@ int main(){
     }
     
     Conjunto *estadosPassados;
+    
+    cout<<"flag";
     switch(tipoConjunto) //define estadosPassados
     {
         case 1:
@@ -801,6 +899,8 @@ int main(){
     cdF = n;
     meF = ceF = 0;
     beF = FALSE;
+    
+    cout<<"flag";
 
     estadoInicial = new Estado(be0, me0, ce0, NULL);
     estadoFinal = new Estado(beF, meF, ceF, NULL);
