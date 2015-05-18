@@ -6,7 +6,7 @@
 #define TRUE (1==1)
 #define FALSE (!TRUE)
 
-const int TAMANHO_HASH = 128;
+const int TAMANHO_HASH = 16;
 int m, n;
 
 using namespace std;
