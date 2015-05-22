@@ -766,11 +766,12 @@ class ConjuntoHash: public Conjunto
         int calcValorHash(Estado *e)
         {
             int valorHash;
-            float valorHashTemp;
-            valorHashTemp = e->getValor() * sqrt(5)/4;
-            while (valorHashTemp > 1) {valorHashTemp -= 1;}
-            valorHash = floor(valorHashTemp * TAMANHO_HASH);
-            return abs(valorHash);
+            //float valorHashTemp;
+            //valorHashTemp = abs(e->getValor() * sqrt(5)/4);
+            //while (valorHashTemp > 1) {valorHashTemp -= 1;}
+            //valorHash = floor(valorHashTemp * TAMANHO_HASH);
+            valorHash = e->getValor()%TAMANHO_HASH;
+            return valorHash;
         }
     public:
         ConjuntoHash()
@@ -863,6 +864,9 @@ int main(){
     cout << "\nQual o numero de canibais?    ";
     cin >> n;
     
+    cout << "\nDeve ser impressa saida?\n0-Nao\n1-Sim\n";
+    cin >> imprime;
+    
     ConjuntoOrdenado *analise;
     
     switch(tipoConjuntoOrdenado) //define analise
@@ -878,18 +882,18 @@ int main(){
     Conjunto *estadosPassados;
     
     switch(tipoConjunto) //define estadosPassados
-    {
+    { //tempo de calculo para m=10 000 e n = 9 999
         case 1:
-            estadosPassados = new ConjuntoLista;
+            estadosPassados = new ConjuntoLista; //0m55.952s
             break;
         case 2:
-            estadosPassados = new ArvoreBinaria;
+            estadosPassados = new ArvoreBinaria; //3m10.182s
             break;
         case 3:
-            estadosPassados = new ArvoreAVL;
+            estadosPassados = new ArvoreAVL; //3m0.181s
             break;
         case 4:
-            estadosPassados = new ConjuntoHash;
+            estadosPassados = new ConjuntoHash; //0m4.542s
             break;
     }
         
